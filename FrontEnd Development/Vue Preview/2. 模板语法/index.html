@@ -1,0 +1,63 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue Preview</title>
+  <style>
+    .active {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <!-- 宿主文件 -->
+  <div id="app">
+    <!-- 插值文本 -->
+    <h2 :title="title">{{title}}</h2>
+    
+    <!-- 用户输入 -->
+    <p><input type="text" v-model="course" v-on:keydown.enter="addCourse"><button @click="addCourse">add</button></p>
+
+    
+
+    <!-- 条件渲染 -->
+    <p v-if="courses.length == 0">没有课程信息</p>
+    <div class="course-list" v-else>
+      <!-- 列表渲染 -->
+      <!-- class绑定 -->
+      <!-- <div v-for="c in courses" :key="c" :class="{active: selectedCourse === c}" @click="selectedCourse = c">
+        {{ c }}
+      </div> -->
+      <!-- style绑定 -->
+      <div v-for="c in courses" :key="c" :style="{backgroundColor: (selectedCourse === c ? '#ddd' : 'transparent') }" @click="selectedCourse = c">
+        {{ c }}
+      </div>
+    </div>
+    
+  </div>
+  <script src="vue.js"></script>
+  <script>
+    // 创建Vue实例
+    const app = new Vue({
+      el: "#app",
+      data() {
+        return {
+          title: "购物车!",
+          course: '',
+          selectedCourse: '',
+          courses: ['web全栈','web高级']
+        }
+      },
+      methods: {
+        addCourse() {
+          // 1. 添加course到数组
+          this.courses.push(this.course)
+          // 2. 清空course
+          this.course = ''
+        }
+      },
+    });
+  </script>
+</body>
+</html>

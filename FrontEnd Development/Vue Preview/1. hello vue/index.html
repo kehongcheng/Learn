@@ -1,0 +1,29 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue Preview</title>
+</head>
+<body>
+  <!-- 宿主文件 -->
+  <div id="app">
+    {{title}}
+  </div>
+  <script src="vue.js"></script>
+  <script>
+    // 创建Vue实例
+    const app = new Vue({
+      el: "#app",
+      data() {
+        return {
+          title: "hello vue!"
+        }
+      },
+    });
+    setTimeout(() => {
+      app.title = "vue!!!"
+    }, 1000);
+  </script>
+</body>
+</html>
