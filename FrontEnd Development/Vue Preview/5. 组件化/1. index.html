@@ -21,19 +21,7 @@
 
     
 
-    <!-- 条件渲染 -->
-    <p v-if="courses.length == 0">没有课程信息</p>
-    <div class="course-list" v-else>
-      <!-- 列表渲染 -->
-      <!-- class绑定 -->
-      <!-- <div v-for="c in courses" :key="c" :class="{active: selectedCourse === c}" @click="selectedCourse = c">
-        {{ c }}
-      </div> -->
-      <!-- style绑定 -->
-      <div v-for="c in courses" :key="c" :style="{backgroundColor: (selectedCourse === c ? '#ddd' : 'transparent') }" @click="selectedCourse = c">
-        {{ c }}
-      </div>
-    </div>
+    <course-list :courses="courses"></course-list>
 
     <!-- 商品总数 -->
     <p>
@@ -47,7 +35,39 @@
     </p>
   </div>
   <script src="../vue.js"></script>
+
   <script>
+    Vue.component("course-list",{
+      data() {
+        return {
+          selectedCourse: '',
+        }
+      },
+      props: {
+        courses: {
+          type: Array,
+          default: [],
+
+        }
+      },
+      template: `
+        <div>
+          <!-- 条件渲染 -->
+          <p v-if="courses.length == 0">没有课程信息</p>
+          <div class="course-list" v-else>
+            <!-- 列表渲染 -->
+            <!-- class绑定 -->
+            <!-- <div v-for="c in courses" :key="c" :class="{active: selectedCourse === c}" @click="selectedCourse = c">
+              {{ c }}
+            </div> -->
+            <!-- style绑定 -->
+            <div v-for="c in courses" :key="c" :style="{backgroundColor: (selectedCourse === c ? '#ddd' : 'transparent') }" @click="selectedCourse = c">
+              {{ c }}
+            </div>
+          </div>
+        </div>
+      `
+    });
     // 模拟异步数据调用
     function getCourses() {
       return new Promise(resolve => {
@@ -63,7 +83,6 @@
         return {
           title: "购物车!",
           course: '',
-          selectedCourse: '',
           courses: [],
           totalCount: 0
         }

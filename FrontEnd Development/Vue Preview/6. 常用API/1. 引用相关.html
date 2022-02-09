@@ -1,0 +1,239 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue Preview</title>
+  <style>
+    .message-box {
+      padding: 10px 20px;
+    }
+    .message-box-close {
+      float: right;
+    }
+    .success {
+      background: #4fc08d;
+      border: 1px solid black;
+    }
+    .warning {
+      background: #EE9900;
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <!-- 宿主文件 -->
+  <div id="app">
+    <!-- 弹窗组件 -->
+    <message ref="msgSuccess" class="success">
+      <template v-slot:title>
+        <strong>成功</strong>
+      </template>
+      <template>
+        新增课程成功！
+      </template>
+    </message>
+    <message ref="msgWarning" class="warning">
+      <template v-slot:title>
+        <strong>警告</strong>
+      </template>
+      <template>
+        请输入课程名称！
+      </template>
+    </message>
+
+    <!-- 插值文本 -->
+    <h2 :title="title">{{title}}</h2>
+    
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <button @click="$bus.$emit('message-close')">清空提示框</button>
+    </div>
+
+    <!-- 新增课程 -->
+    <course-add v-model="course" @add-course="addCourse"></course-add>
+    
+    <!-- 批量更新价格 -->
+    <p><input type="text" v-model.number="price"><button @click="batchUpdate">批量更新价格</button></p>
+
+    <!-- 商品列表 -->
+    <course-list :courses="courses"></course-list>
+    
+    <!-- 商品总数 -->
+    <p>
+      <!-- 表达式 -->
+      <!-- 课程总数：{{ courses.length + '门' }} -->
+      <!-- 计算属性 -->
+      课程总数：{{ total }}
+      <!-- 监听器 -->
+      <!-- 课程总数：{{ totalCount }} -->
+      
+    </p>
+  </div>
+  <script src="../vue.js"></script>
+
+  <script>
+    // 事件总线
+    Vue.prototype.$bus = new Vue();
+
+    Vue.component("message",{
+      // props: ['show'],
+      data() {
+        return {
+          show: false
+        }
+      },
+      template: `
+        <div class="message-box" v-if="show">
+          <slot name="title"></slot>
+          <slot></slot>
+          <span class="message-box-close" @click="toggle">X</span>
+        </div>
+      `,
+      mounted () {
+        this.$bus.$on("message-close", () => {
+          this.toggle();
+        })
+      },
+      methods: {
+        toggle() {
+          this.show = !this.show;
+        }
+      },
+    })
+    
+    Vue.component("course-add",{
+      props: ['value'],
+      methods: {
+        addCourse() {
+          // 派发事件，通知父组件更新courses
+          this.$emit('add-course');
+        },
+        onInput(e) {
+          this.$emit("input", e.target.value);
+        }
+      },
+      template: `
+        <!-- 用户输入 -->
+        <div>
+          <p>
+            <input type="text" :value="value" @input="onInput" v-on:keydown.enter="addCourse" ref="inp">
+            <button @click="addCourse">add</button>
+          </p>
+        </div>
+      `,
+      mounted () {
+        this.$refs.inp.focus(); 
+      },
+    })
+
+    Vue.component("course-list",{
+      data() {
+        return {
+          selectedCourse: '',
+        }
+      },
+      props: {
+        courses: {
+          type: Array,
+          default: [],
+
+        }
+      },
+      template: `
+        <div>
+          <!-- 条件渲染 -->
+          <p v-if="courses.length == 0">没有课程信息</p>
+          <div class="course-list" v-else>
+            <!-- 列表渲染 -->
+            <!-- class绑定 -->
+            <!-- <div v-for="c in courses" :key="c" :class="{active: selectedCourse === c}" @click="selectedCourse = c">
+              {{ c }}
+            </div> -->
+            <!-- style绑定 -->
+            <div v-for="c in courses" :key="c.name" :style="{backgroundColor: (selectedCourse === c ? '#ddd' : 'transparent') }" @click="selectedCourse = c">
+              {{ c.name }} - ￥ {{ c.price }}
+            </div>
+          </div>
+        </div>
+      `
+    });
+
+    // 模拟异步数据调用
+    function getCourses() {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve([{name: 'web全栈'},{name: 'web高级'}])
+        }, 2000);
+      })
+    }
+    
+    // 创建Vue实例
+    const app = new Vue({
+      el: "#app",
+      data() {
+        return {
+          title: "购物车!",
+          course: '',
+          courses: [],
+          totalCount: 0,
+          // showSuccess: false,
+          // showWarning: false,
+          price: 0
+        }
+      },
+      // 组件实例已创建，由于未挂载，dom不存在
+      async created () {
+        // 获取商品信息
+        const courses = await getCourses();
+        this.courses = courses;
+
+        // 批量更新商品价格
+        this.batchUpdate();
+      },
+      mounted () {
+        
+      },
+      methods: {
+        addCourse() {
+          // 添加course到数组
+          if (this.course) {
+            this.courses.push({name: this.course});
+            this.course = '';
+            this.$refs.msgSuccess.toggle();
+          } else {
+            this.$refs.msgWarning.toggle();
+          }
+        },
+        batchUpdate() {
+          this.courses.forEach(c => {
+            // c.price = this.price; // 不会重新渲染
+            Vue.set(c, 'price', this.price);
+          });
+        }
+      },
+      computed: {
+        total() {
+          // 计算属性有缓存性，值没有变化，页面不会重新渲染
+          return this.courses.length + '门' 
+        }
+      },
+      // 默认watch，初始化不执行
+      // watch: {
+      //   courses(newValue, oldValue) {
+      //     this.totalCount = newValue.length + '门'
+      //   }
+      // },
+      // watch: {
+      //   courses: {
+      //     immediate: true, // 立即执行一次
+      //     // deep: true,
+      //     handler(newValue, oldValue) {
+      //       this.totalCount = newValue.length + '门'
+      //     }
+      //   }
+      // },
+    });
+  </script>
+</body>
+</html>
