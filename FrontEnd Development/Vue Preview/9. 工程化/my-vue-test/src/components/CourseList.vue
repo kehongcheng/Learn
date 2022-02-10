@@ -9,7 +9,9 @@
         {{ c }}
       </div> -->
       <!-- style绑定 -->
-      <div v-for="c in courses" :key="c.name" :style="{backgroundColor: (selectedCourse === c ? '#ddd' : 'transparent') }" @click="selectedCourse = c">
+      <div v-for="c in courses" :key="c.name" :style="{backgroundColor: (selectedCourse === c ? '#ddd' : 'transparent') }"
+        @click="onClick(c)"
+      >
         {{ c.name }} - {{ c.price | currency("$") }}
       </div>
     </div>
@@ -36,7 +38,13 @@
       currency(value, symbol="￥") {
         return symbol + value;
       }
-    }
+    },
+    methods: {
+      onClick(c) {
+        this.selectedCourse = c;
+        this.$router.push(`/admin/course/${c.name}`);
+      }
+    },
   }
 </script>
 
